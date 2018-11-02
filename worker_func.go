@@ -38,6 +38,9 @@ type WorkerWithFunc struct {
 
 	// recycleTime will be update when putting a worker back into queue.
 	recycleTime time.Time
+	
+	//
+	Err chan error
 }
 
 // run starts a goroutine to repeat the process
@@ -49,7 +52,7 @@ func (w *WorkerWithFunc) run() {
 				w.pool.decRunning()
 				return
 			}
-			w.pool.poolFunc(args)
+			w.Err <- w.pool.poolFunc(args)
 			w.pool.putWorker(w)
 		}
 	}()

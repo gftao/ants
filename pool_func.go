@@ -122,8 +122,9 @@ func (p *PoolWithFunc) Serve(args interface{}) error {
 	if len(p.release) > 0 {
 		return ErrPoolClosed
 	}
-	p.getWorker().args <- args
-	return nil
+	w := p.getWorker()
+	w.args <- args
+	return <-w.Err
 }
 
 // Running returns the number of the currently running goroutines.
@@ -215,6 +216,7 @@ func (p *PoolWithFunc) getWorker() *WorkerWithFunc {
 		w = &WorkerWithFunc{
 			pool: p,
 			args: make(chan interface{}, 1),
+			Err:  make(chan error),
 		}
 		w.run()
 		p.incRunning()
